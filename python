@@ -1,3 +1,80 @@
-import csv, tkinter as tk
-from tkinter import ttk
-root=tk.Tk();root.title("PIM Simples")
+
+
+import csv
+import tkinter as tk
+from tkinter import ttk, messagebox
+import os
+
+BASE = os.path.join(os.path.dirname(__file__), "..")
+DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+def read_csv(filename):
+    path = os.path.join(os.path.dirname(__file__), "..", filename)
+    if not os.path.exists(path):
+        return []
+    with open(path, newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        return list(reader)
+
+class App(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title('Sistema Acadêmico - PIM II')
+        self.geometry('700x400')
+        self.create_widgets()
+
+    def create_widgets(self):
+        tabControl = ttk.Notebook(self)
+        self.tab_users = ttk.Frame(tabControl)
+        self.tab_turmas = ttk.Frame(tabControl)
+        self.tab_notas = ttk.Frame(tabControl)
+        tabControl.add(self.tab_users, text='Usuários')
+        tabControl.add(self.tab_turmas, text='Turmas')
+        tabControl.add(self.tab_notas, text='Histórico / Notas')
+        tabControl.pack(expand=1, fill='both')
+
+        # Users table
+        self.tree_users = ttk.Treeview(self.tab_users, columns=('id','nome','tipo','login'), show='headings')
+        for c in ('id','nome','tipo','login'):
+            self.tree_users.heading(c, text=c)
+        self.tree_users.pack(fill='both', expand=True)
+        btn = ttk.Button(self.tab_users, text='Carregar Usuários', command=self.load_users)
+        btn.pack(pady=5)
+
+        # Turmas table
+        self.tree_turmas = ttk.Treeview(self.tab_turmas, columns=('id','nome','curso','professor_id'), show='headings')
+        for c in ('id','nome','curso','professor_id'):
+            self.tree_turmas.heading(c, text=c)
+        self.tree_turmas.pack(fill='both', expand=True)
+        btn2 = ttk.Button(self.tab_turmas, text='Carregar Turmas', command=self.load_turmas)
+        btn2.pack(pady=5)
+
+        # Notas
+        self.tree_notas = ttk.Treeview(self.tab_notas, columns=('aluno_id','turma_id','nota'), show='headings')
+        for c in ('aluno_id','turma_id','nota'):
+            self.tree_notas.heading(c, text=c)
+        self.tree_notas.pack(fill='both', expand=True)
+        btn3 = ttk.Button(self.tab_notas, text='Carregar Notas', command=self.load_notas)
+        btn3.pack(pady=5)
+
+    def load_users(self):
+        for i in self.tree_users.get_children():
+            self.tree_users.delete(i)
+        for row in read_csv('usuarios.csv'):
+            self.tree_users.insert('', 'end', values=(row.get('id'), row.get('nome'), row.get('tipo'), row.get('login')))
+
+    def load_turmas(self):
+        for i in self.tree_turmas.get_children():
+            self.tree_turmas.delete(i)
+        for row in read_csv('turmas.csv'):
+            self.tree_turmas.insert('', 'end', values=(row.get('id'), row.get('nome'), row.get('curso'), row.get('professor_id')))
+
+    def load_notas(self):
+        for i in self.tree_notas.get_children():
+            self.tree_notas.delete(i)
+        for row in read_csv('notas.csv'):
+            self.tree_notas.insert('', 'end', values=(row.get('aluno_id'), row.get('turma_id'), row.get('nota')))
+
+if __name__ == '__main__':
+    app = App()
+    app.mainloop()
