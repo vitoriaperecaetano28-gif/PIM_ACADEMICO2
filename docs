@@ -1,0 +1,4 @@
+graph LR
+ Admin-->Usuarios
+ Professor-->Notas
+ Aluno-->Notas
